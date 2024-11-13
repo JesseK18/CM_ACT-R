@@ -1,9 +1,9 @@
 import tkinter
-import collections
+from collections.abc import Callable
 
 def get_value(obj,attr,default=None):
     x=getattr(obj,attr,default)
-    if isinstance(x, collections.Callable): x=x()
+    if isinstance(x, Callable): x=x()
     return x
 
 class DefaultRenderer:

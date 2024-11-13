@@ -64,14 +64,14 @@ class TkinterDisplay:
         dt=0.01
 
         while True:
-            next_time=time.clock()+dt
+            next_time=time.perf_counter()+dt
             yield dt*self.rate
             render(obj,self.canvas)
             root.update()
-            if time.clock()>next_time and obj.now()>dt:
+            if time.perf_counter()>next_time and obj.now()>dt:
                 #print 'frame skipped at t=%1.3fs'%obj.now()
                 self.skipped_frame=True
-            while self.paused or time.clock()<next_time:
+            while self.paused or time.perf_counter()<next_time:
                 root.update()
             self.update_title()
             
