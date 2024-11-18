@@ -3,9 +3,9 @@ from ccm.lib.actr import *
 class Hanoi(ACTR):
     goal = Buffer()
     retrieve = Buffer()
-    # memory = Memory(retrieve)
-    memory=Memory(retrieve,threshold=-3)
-    DMNoise(memory,noise=0.3)
+    memory = Memory(retrieve)
+    # memory=Memory(retrieve,threshold=-3)
+    # DMNoise(memory,noise=0.3)
     
     def init():
         memory.add('move A C')
@@ -18,34 +18,52 @@ class Hanoi(ACTR):
     def initializeHanoi(goal='hanoi disk1:None?loc1 disk2:None?loc2 disk3:None?loc3 Endpeg:?end'):
         print('All disks start at A and they need to be moved to', end)
         goal.modify(disk1='A', disk2='A', disk3='A')
+        pegs = {'A': ['1', '2', '3'], 'B': [], 'C': []} 
+        print('Peg A has disks', pegs['A'], ', peg B has disks', pegs['B'], ', peg C has disks', pegs['C'])
         memory.request('move A ?end')
     
     def terminateHanoi(goal='hanoi disk1:?end disk2:?end disk3:?end Endpeg:?end'):
         print('All disks have been moved to', end)
-        print('Disk 1 is at', end, 'Disk 2 is at', end, 'Disk 3 is at', end)
         goal.set('done')
         print('All moves completed')
         
     def moveDisk1(goal='hanoi disk1:?loc1 disk2:?loc2 disk3:?loc3 Endpeg:?end', # disk 1 can always be moved
                    retrieve='move ?loc1 ?next'):
-        print('Move disk 1 from', loc1, 'to', next)
+        print('Disk 1 was moved to', next)
+        goal.modify(disk1=next)
+        pegs = {'A': [], 'B': [], 'C': []} 
+        pegs[next].append('1')
+        pegs[loc2].append('2')
+        pegs[loc3].append('3')
+        print('Peg A has disks', pegs['A'], ', peg B has disks', pegs['B'], ', peg C has disks', pegs['C'])
         if next != loc2: # if disk1 is not going to the same peg as disk2
             memory.request('move ?loc2 !?next') # Don't move disk 2 to the same peg as disk 1
         else: # if disk1 and disk2 are on the same peg
             memory.request('move ?loc3 !?loc2')
-        goal.modify(disk1=next)
+        
 
     def moveDisk2(goal='hanoi disk1:?loc1 disk2:?loc2!?loc1 disk3:?loc3 Endpeg:?end', # only move disk 2 if disk 1 is not on the same peg as it, and where it is going
                    retrieve='move ?loc2 ?next!?loc1'):
-        print('Move disk 2 from', loc2, 'to', next)
-        memory.request('move ?loc1 ?next') # move disk 1 to the same peg as disk 2
+        print('Disk 2 was moved to', next)
         goal.modify(disk2=next)
+        pegs = {'A': [], 'B': [], 'C': []} 
+        pegs[loc1].append('1')
+        pegs[next].append('2')
+        pegs[loc3].append('3')
+        print('Peg A has disks', pegs['A'], ', peg B has disks', pegs['B'], ', peg C has disks', pegs['C'])
+        memory.request('move ?loc1 ?next') # move disk 1 to the same peg as disk 2
         
     def moveDisk3(goal='hanoi disk1:?loc1 disk2:?loc2 disk3:?loc3!?loc2!?loc1 Endpeg:?end', # only move disk 3 if disk 1 and 2 are not on the same peg as it, and where it is going
                    retrieve='move ?loc3 ?next!?loc1!?loc2'):
-        print('Move disk 3 from', loc3, 'to', next)
-        memory.request('move ?loc1 !?next') # move disk 1 away from disk 2 to and not to the same peg as disk 3
+        print('Disk 3 was moved to', next)
         goal.modify(disk3=next)
+        pegs = {'A': [], 'B': [], 'C': []} 
+        pegs[loc1].append('1')
+        pegs[loc2].append('2')
+        pegs[next].append('3')
+        print('Peg A has disks', pegs['A'], ', peg B has disks', pegs['B'], ', peg C has disks', pegs['C'])
+        memory.request('move ?loc1 !?next') # move disk 1 away from disk 2 to and not to the same peg as disk 3
+        
     
 
 model = Hanoi()
